@@ -24,13 +24,15 @@ class FuncWithAttrs(Protocol[P, R]):
 
     title: str
     name: str
+    __name__: str
 
 
 def make_func_with_attrs(fn: Callable[P, R]) -> FuncWithAttrs[P, R]:
     return cast(FuncWithAttrs[P, R], fn)
 
 
-template = Template("""
+template = Template(
+    """
 {% extends "admin/base_site.html" %}
 {% load admin_urls static l10n %}
 {% block extrastyle %}
@@ -63,7 +65,10 @@ template = Template("""
     </form>
   </div>
 {% endblock %}
-""")
+"""
+)
+
+F = TypeVar("F", bound=Form)
 
 
 def render_form(request: HttpRequest, form: Form, title: str):
@@ -78,8 +83,8 @@ def render_form(request: HttpRequest, form: Form, title: str):
     return HttpResponse(template.render(context))
 
 
-def form_button(title: str, form_cls: Type[Form]):
-    def decorator(func: Callable[[HttpRequest, Form], HttpResponseBase]):
+def form_button(title: str, form_cls: Type[F]):
+    def decorator(func: Callable[[HttpRequest, F], HttpResponseBase]):
         @make_func_with_attrs
         @wraps(func)
         def wrapper(request: HttpRequest):
